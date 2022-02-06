@@ -71,10 +71,12 @@ namespace EmployeeWorkHourTracker.Controllers
                         }
                         else
                         {
+                            int employeeID = await _context.Employees.Where(x => x.Passode == model.Passcode).Select(x => x.EmployeeID).FirstOrDefaultAsync();
+
                             await _context.WorkTrackerLogs.AddAsync(new WorkTrackerLog
                             {
                                 Date = model.DateTime,
-                                EmployeeID = model.EmployeeID,
+                                EmployeeID = employeeID,
                                 StartDateTime = model.DateTime
                             });
                         }
