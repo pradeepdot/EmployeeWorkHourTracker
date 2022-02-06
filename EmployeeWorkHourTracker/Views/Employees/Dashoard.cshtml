@@ -1,0 +1,30 @@
+﻿@model IEnumerable<EmployeeWorkHourTracker.Models.Entity.Employee>
+
+@{
+    ViewData["Title"] = "Dashoard";
+}
+
+<div class="row text-center">
+    @if (Model != null)
+    {
+        foreach (var item in Model)
+        {
+            @if (item.WorkTrackerLogs.Count > 0 && item.WorkTrackerLogs.Any(x => !x.EndDateTime.HasValue))
+            {
+                <div class="col-2 text-center">
+                    <a class="btn btn-success p-4 et-button" asp-action="Passcode" asp-route-id="@item.EmployeeID" asp-route-postAction="LogTime">@(item.FirstName + " " + item.LastName)</a>
+                    <p>Working</p>
+                </div>
+            }
+            else
+            {
+                <div class="col-2 text-center">
+                    <a class="btn btn-danger p-4 et-button" asp-action="Passcode" asp-route-id="@item.EmployeeID" asp-route-postAction="LogTime">@(item.FirstName + " " + item.LastName)</a>
+                    <p>Out</p>
+                </div>
+            }
+        }
+    }
+</div>
+
+

@@ -1,0 +1,38 @@
+﻿@model EmployeeWorkHourTracker.Models.ViewModel.TimeLogViewModel
+
+@{
+    ViewData["Title"] = "Time Log";
+}
+
+
+<div class="row text-center">
+    <div class="col-12">
+        <form asp-controller="employees" asp-action="LogTime" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <input type="hidden" asp-for="EmployeeID" />
+            <input type="hidden" asp-for="StartLog" />
+            <input type="hidden" asp-for="StopLog" />
+            <input type="hidden" asp-for="Passcode" />
+            <input type="hidden" asp-for="DateTime" />
+            <div class="form-group">
+                <label asp-for="DateTime" class="control-label m-2 clock-time">
+                    @TimeZoneInfo.ConvertTimeFromUtc(@Model.DateTime, TimeZoneInfo.Local).ToString("hh:mm tt")
+                </label>
+            </div>
+            <div class="form-group">
+                @if (Model.StartLog)
+                {
+                    <input type="submit" value="Start" class="btn btn-success p-2 et-button mt-2" />
+                }
+                else if (Model.StopLog)
+                {
+                    <input type="submit" value="Stop" class="btn btn-danger p-2 et-button mt-2" />
+                }
+                else
+                {
+                     <input type="submit" disabled value="Start" class="btn btn-success p-2 et-button mt-2" />
+                }
+            </div>
+        </form>
+    </div>
+</div>

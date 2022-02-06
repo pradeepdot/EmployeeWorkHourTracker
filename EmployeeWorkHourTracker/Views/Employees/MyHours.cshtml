@@ -1,0 +1,46 @@
+﻿@model EmployeeWorkHourTracker.Models.Entity.Employee
+@{
+    ViewData["Title"] = "MyHours";
+}
+
+@if (Model != null)
+{
+    <h3>@(Model.FirstName + " " + Model.LastName)</h3>
+    <div class="row">
+        <div class="col-12">
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Start</th>
+                        <th scope="col">End</th>
+                        <th scope="col">Total Hours</th>
+                    </tr>
+                </thead>
+                @if (Model.WorkTrackerLogs.Count > 0)
+                {
+                    foreach (var item in Model.WorkTrackerLogs)
+                    {
+                        <tr>
+                            <th scope="row">@TimeZoneInfo.ConvertTimeFromUtc(item.Date, TimeZoneInfo.Local).ToShortDateString()</th>
+                            <th>@TimeZoneInfo.ConvertTimeFromUtc(item.StartDateTime, TimeZoneInfo.Local).ToString("hh:mm tt")</th>
+                            <th>@(item.EndDateTime.HasValue ?TimeZoneInfo.ConvertTimeFromUtc(item.EndDateTime.Value, TimeZoneInfo.Local).ToString("hh:mm tt"): "")</th>
+                            <th>
+                                @(item.EndDateTime.HasValue ? (item.EndDateTime.Value - item.StartDateTime): "")
+                            </th>
+                        </tr>
+                    }
+                }
+            </table>
+
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center mt-5 control-label">No Records</div>
+}
+
+
+
+
