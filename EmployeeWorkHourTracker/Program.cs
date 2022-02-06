@@ -20,7 +20,6 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<EmployeeDBContext>();
         DbInitializer.CreateDbIfNotExists(app);
-        DbInitializer.Initialize(context);
     }
     catch (Exception ex)
     {

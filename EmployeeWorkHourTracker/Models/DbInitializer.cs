@@ -16,8 +16,8 @@ namespace EmployeeWorkHourTracker.Models
 
             var employees = new Employee[]
             {
-            new Employee{FirstName="John",LastName="Doe",Passode="4515"},
-            new Employee{FirstName="Patrick",LastName="Jackson",Passode="8954"},
+                new Employee{ FirstName="John", LastName="Doe", Passode="4515"},
+                new Employee{ FirstName="Patrick", LastName="Jackson", Passode="8954"},
             };
             foreach (Employee employee in employees)
             {
@@ -34,7 +34,7 @@ namespace EmployeeWorkHourTracker.Models
                 try
                 {
                     var context = services.GetRequiredService<EmployeeDBContext>();
-                    DbInitializer.Initialize(context);
+                    Initialize(context);
                 }
                 catch (Exception ex)
                 {
