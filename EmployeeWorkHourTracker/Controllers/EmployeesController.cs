@@ -17,11 +17,11 @@ namespace EmployeeWorkHourTracker.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return RedirectToAction("Dashoard");
+            return RedirectToAction("Dashboard");
         }
 
 
-        public async Task<IActionResult> Dashoard()
+        public async Task<IActionResult> Dashboard()
         {
             return View(await _context.Employees.Include(x => x.WorkTrackerLogs.Where(z => z.Date.Date == DateTime.Today.Date))
                 .ToListAsync());
@@ -37,7 +37,7 @@ namespace EmployeeWorkHourTracker.Controllers
                     .Select(x => new EmployeePasscodeViewModel
                     {
                         EmployeeID = x.EmployeeID,
-                        Passcode = x.Passode
+                        PassCode = x.PassCode
                     }).FirstOrDefaultAsync());
 
             return View(new EmployeePasscodeViewModel());
@@ -50,12 +50,12 @@ namespace EmployeeWorkHourTracker.Controllers
 
             if (ModelState.IsValid)
             {
-                // Check if give passcode match with any employee
+                // Check if give passcode match with any employee  https://screencast-o-matic.com/watch/c3n1ewVDGHU
                 if (await _context.Employees
-                  .AnyAsync(x => x.Passode == model.Passcode))
+                  .AnyAsync(x => x.PassCode == model.PassCode))
                 {
                     // Check for work log entry for today already exist
-                    var workTrackerLog = await _context.WorkTrackerLogs.Where(x => x.Employee.Passode == model.Passcode && x.Date.Date == DateTime.Today.Date).FirstOrDefaultAsync();
+                    var workTrackerLog = await _context.WorkTrackerLogs.Where(x => x.Employee.PassCode == model.PassCode && x.Date.Date == DateTime.Today.Date).FirstOrDefaultAsync();
                     if (workTrackerLog == null)
                     {
                         if (!model.StartLog)
@@ -63,7 +63,7 @@ namespace EmployeeWorkHourTracker.Controllers
                             return View(new TimeLogViewModel
                             {
                                 EmployeeID = model.EmployeeID,
-                                Passcode = model.Passcode,
+                                PassCode = model.PassCode,
                                 StartLog = true,
                                 StopLog = false,
                                 DateTime = DateTime.UtcNow
@@ -71,7 +71,7 @@ namespace EmployeeWorkHourTracker.Controllers
                         }
                         else
                         {
-                            int employeeID = await _context.Employees.Where(x => x.Passode == model.Passcode).Select(x => x.EmployeeID).FirstOrDefaultAsync();
+                            int employeeID = await _context.Employees.Where(x => x.PassCode == model.PassCode).Select(x => x.EmployeeID).FirstOrDefaultAsync();
 
                             await _context.WorkTrackerLogs.AddAsync(new WorkTrackerLog
                             {
@@ -97,7 +97,7 @@ namespace EmployeeWorkHourTracker.Controllers
                             return View(new TimeLogViewModel
                             {
                                 EmployeeID = model.EmployeeID,
-                                Passcode = model.Passcode,
+                                PassCode = model.PassCode,
                                 StartLog = false,
                                 StopLog = true,
                                 DateTime = DateTime.UtcNow
@@ -109,7 +109,7 @@ namespace EmployeeWorkHourTracker.Controllers
 
                     await _context.SaveChangesAsync();
 
-                    return RedirectToAction("Dashoard");
+                    return RedirectToAction("Dashboard");
                 }
                 else
                 {
@@ -128,7 +128,7 @@ namespace EmployeeWorkHourTracker.Controllers
             if (ModelState.IsValid)
             {
                 return View(await _context.Employees.Include(x => x.WorkTrackerLogs)
-                .Where(x => x.Passode == model.Passcode)
+                .Where(x => x.PassCode == model.PassCode)
                 .FirstOrDefaultAsync());
             }
             return View("Passcode", model);

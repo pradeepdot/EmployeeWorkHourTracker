@@ -13,7 +13,7 @@ namespace EmployeeWorkHourTracker.Models.Entity
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int EmployeeID { get; set; }
-        public string Passode { get; set; }
+        public string PassCode { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
 

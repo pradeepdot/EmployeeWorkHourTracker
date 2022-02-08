@@ -1,0 +1,22 @@
+﻿@model IEnumerable<EmployeeWorkHourTracker.Models.Entity.Employee>
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row text-center">
+    @if (Model != null)
+    {
+        foreach (var item in Model)
+        {
+            bool isWorking = item.WorkTrackerLogs.Count > 0 && item.WorkTrackerLogs.Any(x => !x.EndDateTime.HasValue);
+            <div class="col-2 text-center">
+                <a class="btn p-4 @(isWorking ? "btn-success " :"btn-danger ")et-button"
+           asp-action="Passcode" asp-route-id="@item.EmployeeID" asp-route-postAction="LogTime">@(item.FirstName + " " + item.LastName)</a>
+                <p>@(isWorking ? "Working": "Out" )</p>
+            </div>
+        }
+    }
+</div>
+
+

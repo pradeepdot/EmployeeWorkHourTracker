@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="DbScript\" />
     <Folder Include="Views\Home\" />
   </ItemGroup>
 
