@@ -12,10 +12,14 @@ namespace EmployeeWorkHourTracker.Models.ViewModel
         [MinLength(4, ErrorMessage = "Employee Passcode length must be 4 or more character long")]
         public string PassCode { get; set; }
         public int EmployeeID { get; set; }
+        public string PostToActionName { get; set; }
     }
 
-    public class TimeLogViewModel: EmployeePasscodeViewModel
+    public class TimeLogViewModel
     {
+        [Required(ErrorMessage = "Employee Passcode is required")]
+        [MinLength(4, ErrorMessage = "Employee Passcode length must be 4 or more character long")]
+        public string PassCode { get; set; }
         public bool StartLog { get; set; }
         public bool StopLog { get; set; }
         public DateTime DateTime { get; set; }

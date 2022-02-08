@@ -9,7 +9,6 @@
     <div class="col-12">
         <form asp-controller="employees" asp-action="LogTime" method="post">
             <div asp-validation-summary="All" class="text-danger"></div>
-            <input type="hidden" asp-for="EmployeeID" />
             <input type="hidden" asp-for="StartLog" />
             <input type="hidden" asp-for="StopLog" />
             <input type="hidden" asp-for="PassCode" />
@@ -36,3 +35,6 @@
         </form>
     </div>
 </div>
+@section Scripts {
+     @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

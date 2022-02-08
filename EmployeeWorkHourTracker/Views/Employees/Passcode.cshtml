@@ -7,9 +7,10 @@
 <div class="row text-center">
     <div class="col-12">
         <div class="tlp-form">
-            <form asp-controller="employees" asp-action="@(ViewData["PostToAction"].ToString())" method="post">
+            <form asp-controller="employees" asp-action="Passcode" method="post">
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <input type="hidden" asp-for="EmployeeID" />
+                <input type="hidden" asp-for="PostToActionName" />
                 <div class="form-group">
                     <label asp-for="PassCode" class="control-label"></label>
                     <input asp-for="PassCode" class="form-control mt-2" />

@@ -37,8 +37,71 @@ namespace EmployeeWorkHourTracker.Controllers
                     .Select(x => new EmployeePasscodeViewModel
                     {
                         EmployeeID = x.EmployeeID,
-                        PassCode = x.PassCode
+                        PassCode = x.PassCode,
+                        PostToActionName = postAction
                     }).FirstOrDefaultAsync());
+
+            return View(new EmployeePasscodeViewModel { PostToActionName = postAction });
+        }
+
+        [HttpPost("Passcode")]
+        public async Task<IActionResult> Passcode(EmployeePasscodeViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            if (!await _context.Employees
+                  .AnyAsync(x => x.PassCode == model.PassCode))
+            {
+                ModelState.AddModelError("Employee", "Employee with given passcode does not exists.");
+                return View("Passcode", model);
+            }
+
+            return RedirectToActionPermanent(model.PostToActionName, new
+            {
+                PassCode = model.PassCode
+            });
+        }
+
+        [HttpGet("LogTime")]
+        public async Task<IActionResult> LogTime(string PassCode)
+        {
+            var workTrackerLog = await _context.WorkTrackerLogs.Where(x => x.Employee.PassCode == PassCode && x.Date.Date == DateTime.Today.Date).FirstOrDefaultAsync();
+            if (workTrackerLog == null)
+            {
+                return View(new TimeLogViewModel
+                {
+                    PassCode = PassCode,
+                    StartLog = true,
+                    StopLog = false,
+                    DateTime = DateTime.UtcNow
+                });
+            }
+
+            if (workTrackerLog != null)
+            {
+                if (workTrackerLog.EndDateTime.HasValue && workTrackerLog.EndDateTime.Value != DateTime.MinValue)
+                {
+                    ModelState.AddModelError("AlreadyTimeLog", "You have already logged start & end time for today.");
+                    ModelState.AddModelError("Time", $"Start Time: {TimeZoneInfo.ConvertTimeFromUtc(workTrackerLog.StartDateTime, TimeZoneInfo.Local).ToString("hh:mm tt")}, End Time: {TimeZoneInfo.ConvertTimeFromUtc(workTrackerLog.EndDateTime.Value, TimeZoneInfo.Local).ToString("hh:mm tt")}");
+                    
+                    return View(new TimeLogViewModel
+                    {
+                        PassCode = PassCode,
+                        StartLog = false,
+                        StopLog = false,
+                        DateTime = DateTime.UtcNow
+                    });
+                }
+
+                return View(new TimeLogViewModel
+                {
+                    PassCode = PassCode,
+                    StartLog = false,
+                    StopLog = true,
+                    DateTime = DateTime.UtcNow
+                });
+            }
 
             return View(new EmployeePasscodeViewModel());
         }
@@ -46,92 +109,44 @@ namespace EmployeeWorkHourTracker.Controllers
         [HttpPost("LogTime")]
         public async Task<IActionResult> LogTime(TimeLogViewModel model)
         {
-            ViewData["PostToAction"] = "LogTime";
-
             if (ModelState.IsValid)
             {
-                // Check if give passcode match with any employee  https://screencast-o-matic.com/watch/c3n1ewVDGHU
-                if (await _context.Employees
-                  .AnyAsync(x => x.PassCode == model.PassCode))
+                // Check for work log entry for today already exist
+                var workTrackerLog = await _context.WorkTrackerLogs
+                    .Where(x => x.Employee.PassCode == model.PassCode
+                    && x.Date.Date == DateTime.Today.Date)
+                    .FirstOrDefaultAsync();
+
+                if (workTrackerLog == null)
                 {
-                    // Check for work log entry for today already exist
-                    var workTrackerLog = await _context.WorkTrackerLogs.Where(x => x.Employee.PassCode == model.PassCode && x.Date.Date == DateTime.Today.Date).FirstOrDefaultAsync();
-                    if (workTrackerLog == null)
+                    int employeeID = await _context.Employees.Where(x => x.PassCode == model.PassCode).Select(x => x.EmployeeID).FirstOrDefaultAsync();
+                    await _context.WorkTrackerLogs.AddAsync(new WorkTrackerLog
                     {
-                        if (!model.StartLog)
-                        {
-                            return View(new TimeLogViewModel
-                            {
-                                EmployeeID = model.EmployeeID,
-                                PassCode = model.PassCode,
-                                StartLog = true,
-                                StopLog = false,
-                                DateTime = DateTime.UtcNow
-                            });
-                        }
-                        else
-                        {
-                            int employeeID = await _context.Employees.Where(x => x.PassCode == model.PassCode).Select(x => x.EmployeeID).FirstOrDefaultAsync();
-
-                            await _context.WorkTrackerLogs.AddAsync(new WorkTrackerLog
-                            {
-                                Date = model.DateTime,
-                                EmployeeID = employeeID,
-                                StartDateTime = model.DateTime
-                            });
-                        }
-                    }
-
-                    if (workTrackerLog != null)
-                    {
-                        if (workTrackerLog.EndDateTime.HasValue && workTrackerLog.EndDateTime.Value != DateTime.MinValue)
-                        {
-                            ModelState.AddModelError("AlreadyTimeLog", "You have already logged start & end time for today.");
-                            ModelState.AddModelError("Time", $"Start Time: {TimeZoneInfo.ConvertTimeFromUtc(workTrackerLog.StartDateTime, TimeZoneInfo.Local).ToString("hh:mm tt")}, End Time: {TimeZoneInfo.ConvertTimeFromUtc(workTrackerLog.EndDateTime.Value, TimeZoneInfo.Local).ToString("hh:mm tt")}");
-                            model.DateTime = DateTime.UtcNow;
-                            return View(model);
-                        }
-
-                        if (!model.StopLog)
-                        {
-                            return View(new TimeLogViewModel
-                            {
-                                EmployeeID = model.EmployeeID,
-                                PassCode = model.PassCode,
-                                StartLog = false,
-                                StopLog = true,
-                                DateTime = DateTime.UtcNow
-                            });
-                        }
-                        else
-                            workTrackerLog.EndDateTime = model.DateTime;
-                    }
-
-                    await _context.SaveChangesAsync();
-
-                    return RedirectToAction("Dashboard");
+                        Date = model.DateTime,
+                        EmployeeID = employeeID,
+                        StartDateTime = model.DateTime
+                    });
                 }
-                else
+
+                if (workTrackerLog != null)
                 {
-                    ModelState.AddModelError("Employee", "Employee with given passcode does not exists.");
-                    return View("Passcode", model);
+                    workTrackerLog.EndDateTime = model.DateTime;
                 }
+
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Dashboard");
             }
-            return View("Passcode", model);
+
+            return View("LogTime", model);
         }
 
-        [HttpPost("MyHours")]
-        public async Task<IActionResult> MyHours(EmployeePasscodeViewModel model)
+        [HttpGet("MyHours")]
+        public async Task<IActionResult> MyHours(string PassCode)
         {
-            ViewData["PostToAction"] = "MyHours";
-
-            if (ModelState.IsValid)
-            {
-                return View(await _context.Employees.Include(x => x.WorkTrackerLogs)
-                .Where(x => x.PassCode == model.PassCode)
-                .FirstOrDefaultAsync());
-            }
-            return View("Passcode", model);
+            return View(await _context.Employees.Include(x => x.WorkTrackerLogs)
+            .Where(x => x.PassCode == PassCode)
+            .FirstOrDefaultAsync());
         }
     }
 }
